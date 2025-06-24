@@ -1,0 +1,100 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          Int            @id @default(autoincrement())
+  email       String         @unique
+  api_token   String         @unique
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+  transactions Transaction[]
+}
+
+model Transaction {
+  id                   Int                  @id @default(autoincrement())
+  user                 User                 @relation(fields: [user_id], references: [id])
+  user_id              Int
+  transaction_id_app   String               @unique
+  amount               Int
+  transaction_type     Int
+  description          String?
+  transaction_timestamp DateTime
+  category             String
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  counterparties       Counterparty[]
+  payment_methods      PaymentMethod[]
+  transaction_tags     TransactionTag[]
+  recurrences          Recurrence[]
+  attachments          Attachment[]
+  locations            Location[]
+  transaction_metadata TransactionMetadata[]
+}
+
+model Counterparty {
+  id            Int          @id @default(autoincrement())
+  transaction   Transaction  @relation(fields: [transaction_id], references: [id])
+  transaction_id Int
+  name          String
+  is_known      Boolean
+}
+
+model PaymentMethod {
+  id            Int          @id @default(autoincrement())
+  transaction   Transaction  @relation(fields: [transaction_id], references: [id])
+  transaction_id Int
+  type          String
+  provider      String
+  nickname      String?
+  last_four     String?
+}
+
+model TransactionTag {
+  id            Int          @id @default(autoincrement())
+  transaction   Transaction  @relation(fields: [transaction_id], references: [id])
+  transaction_id Int
+  tag           String
+}
+
+model Recurrence {
+  id            Int          @id @default(autoincrement())
+  transaction   Transaction  @relation(fields: [transaction_id], references: [id])
+  transaction_id Int
+  is_recurring  Boolean
+  frequency     String?
+  start_date    DateTime?
+  end_date      DateTime?
+}
+
+model Attachment {
+  id            Int          @id @default(autoincrement())
+  transaction   Transaction  @relation(fields: [transaction_id], references: [id])
+  transaction_id Int
+  type          String
+  url           String
+  description   String?
+}
+
+model Location {
+  id                 Int          @id @default(autoincrement())
+  transaction        Transaction  @relation(fields: [transaction_id], references: [id])
+  transaction_id     Int
+  establishment_name String?
+  address            String?
+  latitude           Decimal?
+  longitude          Decimal?
+}
+
+model TransactionMetadata {
+  id            Int          @id @default(autoincrement())
+  transaction   Transaction  @relation(fields: [transaction_id], references: [id])
+  transaction_id Int
+  device_model  String?
+  app_version   String?
+}
