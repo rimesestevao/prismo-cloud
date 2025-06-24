@@ -4,12 +4,67 @@ Prismo Cloud is a robust, scalable, and secure financial data processing platfor
 
 ## Features
 
-- **Asynchronous Processing:** Transactions are received and queued for asynchronous processing, ensuring high availability and responsiveness of the API.
-- **Dual Database Architecture:** Utilizes MongoDB for storing raw, unstructured transaction data and PostgreSQL for storing structured, processed data, leveraging the strengths of both database types.
-- **Scalable Architecture:** Built with a microservices-friendly architecture, allowing for independent scaling of different components.
-- **Dockerized Environment:** Fully containerized with Docker and Docker Compose for easy setup, deployment, and portability.
-- **Comprehensive Testing:** Includes a full suite of unit, integration, and end-to-end tests to ensure code quality and reliability.
-- **Detailed Logging:** Provides detailed logging for all operations, including transaction processing and error handling.
+- [x] **Asynchronous Processing:** Transactions are received and queued for asynchronous processing.
+- [x] **Dual Database Architecture:** Utilizes MongoDB for raw data and PostgreSQL for structured data.
+- [x] **Scalable Architecture:** Built with a microservices-friendly architecture.
+- [x] **Dockerized Environment:** Fully containerized with Docker and Docker Compose.
+- [x] **Comprehensive Testing:** Includes a full suite of unit, integration, and end-to-end tests.
+- [x] **Detailed Logging:** Provides detailed logging for all operations.
+
+## Architecture
+
+```mermaid
+graph TD
+    subgraph "Client"
+        A[Mobile/Web App]
+    end
+
+    subgraph "Prismo Cloud"
+        B[API Gateway]
+        C[Transaction Ingestion Service]
+        D[Transaction Processing Service]
+        E[MongoDB]
+        F[PostgreSQL]
+    end
+
+    A -- HTTPS --> B
+    B -- REST --> C
+    C -- Saves Raw Data --> E
+    D -- Polls for New Data --> E
+    D -- Transforms & Saves Structured Data --> F
+    D -- Updates Status --> E
+```
+
+## Data Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API Gateway
+    participant Ingestion Service
+    participant MongoDB
+    participant Processing Service
+    participant PostgreSQL
+
+    Client->>API Gateway: POST /api/v1/transactions
+    API Gateway->>Ingestion Service: Forward Request
+    Ingestion Service->>MongoDB: Save Raw Transaction
+    Ingestion Service-->>API Gateway: 202 Accepted
+    API Gateway-->>Client: 202 Accepted
+
+    loop Every 10 seconds
+        Processing Service->>MongoDB: Find unprocessed transactions
+        MongoDB-->>Processing Service: Return transactions
+        alt Transactions Found
+            Processing Service->>PostgreSQL: Save Structured Transaction
+            PostgreSQL-->>Processing Service: Success
+            Processing Service->>MongoDB: Update transaction as processed
+            Processing Service->>MongoDB: Log success
+        else No Transactions
+            Processing Service->>Processing Service: Wait
+        end
+    end
+```
 
 ## Tech Stack
 
@@ -23,9 +78,9 @@ Prismo Cloud is a robust, scalable, and secure financial data processing platfor
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- Docker
-- Docker Compose
+- [ ] Node.js (v18 or higher)
+- [ ] Docker
+- [ ] Docker Compose
 
 ### Installation
 
@@ -55,22 +110,22 @@ The application will be available at `http://localhost:3000`.
 
 ## To-Do
 
-- **Worker Throttling:** Implement limitations on the transaction processor to control the number of transactions processed per run and the time between runs. This will help manage system load and prevent resource exhaustion.
-- **Dead-Letter Queue:** Implement a dead-letter queue for transactions that fail to process multiple times. This will allow for manual inspection and reprocessing of failed transactions.
-- **Authentication & Authorization:** Enhance the security of the API by implementing a robust authentication and authorization mechanism (e.g., JWT, OAuth2).
-- **Data Validation:** Implement comprehensive data validation using a library like Zod to ensure the integrity of incoming data.
-- **Monitoring & Alerting:** Integrate a monitoring and alerting solution (e.g., Prometheus, Grafana) to track the health and performance of the application.
+- [ ] **Worker Throttling:** Implement limitations on the transaction processor.
+- [ ] **Dead-Letter Queue:** Implement a dead-letter queue for failed transactions.
+- [ ] **Authentication & Authorization:** Enhance API security (e.g., JWT, OAuth2).
+- [ ] **Data Validation:** Implement comprehensive data validation (e.g., Zod).
+- [ ] **Monitoring & Alerting:** Integrate a monitoring solution (e.g., Prometheus, Grafana).
 
 ## Performance Suggestions
 
-- **Connection Pooling:** Ensure that the database connections are properly managed and pooled to avoid performance bottlenecks.
-- **Indexing:** Add appropriate indexes to the database tables to speed up query performance, especially for frequently queried fields.
-- **Caching:** Implement a caching layer (e.g., Redis) to cache frequently accessed data and reduce the load on the databases.
-- **Load Balancing:** In a production environment, use a load balancer to distribute traffic across multiple instances of the application.
+- **Connection Pooling:** Ensure proper management of database connections.
+- **Indexing:** Add indexes to database tables to speed up queries.
+- **Caching:** Implement a caching layer (e.g., Redis).
+- **Load Balancing:** Use a load balancer in production.
 
 ## Security Suggestions
 
-- **Environment Variables:** Never commit sensitive information like API keys and database credentials to the repository. Use environment variables to manage them.
-- **Input Validation:** Always validate and sanitize user input to prevent security vulnerabilities like SQL injection and XSS.
-- **Rate Limiting:** Implement rate limiting on the API to prevent abuse and denial-of-service attacks.
-- **Dependency Scanning:** Regularly scan the project dependencies for known vulnerabilities and update them as needed.
+- **Environment Variables:** Use environment variables for sensitive data.
+- **Input Validation:** Validate and sanitize all user input.
+- **Rate Limiting:** Implement rate limiting to prevent abuse.
+- **Dependency Scanning:** Regularly scan for vulnerabilities.
