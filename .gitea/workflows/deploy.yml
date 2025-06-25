@@ -9,6 +9,8 @@ on:
 jobs:
   update-and-start:
     runs-on: docker-arch
+    container:
+      image: node:18-alpine
     
     steps:
       - name: Atualizar código
