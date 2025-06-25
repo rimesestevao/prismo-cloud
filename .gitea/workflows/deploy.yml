@@ -9,17 +9,14 @@ on:
 jobs:
   update-and-start:
     runs-on: docker-arch
+    container:
+      image: node:18-alpine  # Usando uma imagem Docker oficial do Node.js
 
     steps:
       - name: Checkout código
         uses: actions/checkout@v3
         with:
           ref: main
-
-      - name: Configurar Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
           
       - name: Instalar dependências
         run: |
