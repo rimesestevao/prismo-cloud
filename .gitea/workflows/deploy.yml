@@ -13,10 +13,8 @@ jobs:
       image: node:18-alpine
     
     steps:
-      - name: Configurar diretório de trabalho
-        run: |
-          cd /home/estevao/git/prismo-cloud
-          git pull origin main
+      - name: checkout
+        uses: actions/checkout@v2
           
       - name: Instalar dependências
         run: |
