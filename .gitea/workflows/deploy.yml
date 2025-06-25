@@ -9,99 +9,41 @@ on:
 jobs:
   update-and-start:
     runs-on: docker-arch
-    container:
-      image: node:20
+    
     steps:
-      - name: Diagnóstico do ambiente
+      - name: Checkout código
         run: |
-          echo "=== Informações do Sistema ==="
-          uname -a
-          cat /etc/*release* 2>/dev/null || echo "Informações de release não disponíveis"
-          echo
+          echo "Fazendo checkout do código..."
+          # Como o git está disponível, podemos usar git clone
+          cd /workspace/tevo
+          rm -rf prismo-cloud
+          git clone https://gitea.meesstudios.com.br/tevo/prismo-cloud.git
+          cd prismo-cloud
+          echo "✅ Checkout concluído com sucesso!"
           
-          echo "=== Diretório de trabalho atual ==="
-          pwd
-          ls -la
-          echo
-          
-          echo "=== Ferramentas disponíveis ==="
-          echo "Node.js: $(command -v node || echo 'não instalado')"
-          [ -x "$(command -v node)" ] && node --version
-          
-          echo "NPM: $(command -v npm || echo 'não instalado')"
-          [ -x "$(command -v npm)" ] && npm --version
-          
-          echo "Git: $(command -v git || echo 'não instalado')"
-          [ -x "$(command -v git)" ] && git --version
-          
-          echo "Docker: $(command -v docker || echo 'não instalado')"
-          [ -x "$(command -v docker)" ] && docker --version
-          
-          echo "Docker Compose: $(command -v docker-compose || echo 'verifique docker compose')"
-          [ -x "$(command -v docker-compose)" ] && docker-compose --version
-          [ -x "$(command -v docker)" ] && docker compose version 2>/dev/null
-          
-          echo "PM2: $(command -v pm2 || echo 'não instalado')"
-          [ -x "$(command -v pm2)" ] && pm2 --version
-          
-          echo "Python: $(command -v python || echo 'não instalado') / $(command -v python3 || echo 'não instalado')"
-          [ -x "$(command -v python)" ] && python --version
-          [ -x "$(command -v python3)" ] && python3 --version
-          
-          echo
-          echo "=== Variáveis de ambiente ==="
-          env | grep -v -E 'PASSWORD|SECRET|TOKEN|KEY' || echo "Nenhuma variável de ambiente disponível"
-
-      - name: Verificar instalação do Node.js
-        run: |
-          if ! command -v node &> /dev/null; then
-            echo "Node.js não encontrado, verifique se está instalado no runner"
-            exit 1
-          else
-            echo "Node.js encontrado: $(node --version)"
-          fi
-          
-          if ! command -v npm &> /dev/null; then
-            echo "NPM não encontrado, verifique se está instalado no runner"
-            exit 1
-          else
-            echo "NPM encontrado: $(npm --version)"
-          fi
-          
-      - name: Verificar instalação do Docker
-        run: |
-          if ! command -v docker &> /dev/null; then
-            echo "Docker não encontrado, verifique se está instalado no runner"
-            exit 1
-          else
-            echo "Docker encontrado: $(docker --version)"
-          fi
-          
-          if ! command -v docker-compose &> /dev/null && ! command -v docker &> /dev/null compose; then
-            echo "Docker Compose não encontrado, verifique se está instalado no runner"
-            exit 1
-          else
-            echo "Docker Compose encontrado"
-          fi
-          
-      - name: Instalar dependências
+      - name: Instalar dependências do projeto
         run: |
           echo "Instalando dependências do Node.js..."
           npm install
           echo "✅ Dependências instaladas com sucesso!"
+          
+      - name: Instalar PM2 globalmente
+        run: |
+          echo "Instalando PM2 globalmente..."
+          npm install -g pm2
+          echo "✅ PM2 instalado com sucesso!"
+
+      - name: Gerar arquivos Prisma
+        run: |
+          echo "Gerando arquivos do Prisma..."
+          npx prisma generate
+          echo "✅ Arquivos Prisma gerados com sucesso!"
 
       - name: Gerar build da aplicação
         run: |
           echo "Gerando build da aplicação..."
           npm run build
           echo "✅ Build concluído com sucesso!"
-
-      - name: Iniciar containers com Docker Compose
-        run: |
-          echo "Iniciando containers com Docker Compose..."
-          docker compose down || true
-          docker compose up -d
-          echo "✅ Containers iniciados em segundo plano!"
           
       - name: Executar migração do Prisma
         run: |
@@ -117,10 +59,9 @@ jobs:
           echo "DATABASE_URL=postgresql://user:password@localhost:5432/prismo" >> .env
           echo "✅ Arquivo .env criado com sucesso!"
 
-      - name: Iniciar aplicação
+      - name: Iniciar aplicação com PM2
         run: |
-          echo "Iniciando aplicação com pm2..."
-          npm install -g pm2
+          echo "Iniciando aplicação com PM2..."
           pm2 delete prismo-cloud || true
           pm2 start dist/app.js --name prismo-cloud
           echo "✅ Aplicação iniciada em segundo plano!"
@@ -128,7 +69,7 @@ jobs:
       - name: Verificar status da aplicação
         run: |
           echo "Aguardando inicialização da aplicação..."
-          sleep 10
+          sleep 5
           pm2 status
           if pm2 show prismo-cloud | grep -q "online"; then
             echo "✅ Aplicação iniciada com sucesso!"
