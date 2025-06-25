@@ -8,49 +8,69 @@ on:
 
 jobs:
   update-and-start:
-    runs-on: docker-arch
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Navegar para diretório do projeto
-        run: |
-          cd /home/estevao/git/prismo-cloud
-          echo "Iniciando processo de atualização em $(pwd)..."
+      - name: Checkout código
+        uses: actions/checkout@v3
+        with:
+          ref: main
 
-      - name: Atualizar código (git pull)
-        run: |
-          cd /home/estevao/git/prismo-cloud
-          echo "Atualizando código do repositório..."
-          git pull origin main
-          echo "✅ Código atualizado com sucesso!"
-
+      - name: Configurar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
       - name: Instalar dependências
         run: |
-          cd /home/estevao/git/prismo-cloud
           echo "Instalando dependências do Node.js..."
           npm install
           echo "✅ Dependências instaladas com sucesso!"
 
+      - name: Gerar build da aplicação
+        run: |
+          echo "Gerando build da aplicação..."
+          npm run build
+          echo "✅ Build concluído com sucesso!"
+
       - name: Iniciar containers com Docker Compose
         run: |
-          cd /home/estevao/git/prismo-cloud
           echo "Iniciando containers com Docker Compose..."
+          docker compose down
           docker compose up -d
           echo "✅ Containers iniciados em segundo plano!"
+          
+      - name: Executar migração do Prisma
+        run: |
+          echo "Executando migração do Prisma..."
+          npx prisma migrate deploy
+          echo "✅ Migração concluída com sucesso!"
+
+      - name: Criar arquivo de variáveis de ambiente
+        run: |
+          echo "Criando arquivo .env..."
+          echo "PORT=3000" > .env
+          echo "MONGODB_URI=mongodb://localhost:27017/prismo" >> .env
+          echo "DATABASE_URL=postgresql://user:password@localhost:5432/prismo" >> .env
+          echo "✅ Arquivo .env criado com sucesso!"
 
       - name: Iniciar aplicação
         run: |
-          cd /home/estevao/git/prismo-cloud
-          echo "Iniciando aplicação com npm..."
-          npm run start &
+          echo "Iniciando aplicação com pm2..."
+          npm install -g pm2
+          pm2 delete prismo-cloud || true
+          pm2 start dist/app.js --name prismo-cloud
           echo "✅ Aplicação iniciada em segundo plano!"
 
       - name: Verificar status da aplicação
         run: |
           echo "Aguardando inicialização da aplicação..."
           sleep 10
-          ps aux | grep "npm run start" | grep -v grep
-          if [ $? -eq 0 ]; then
+          pm2 status
+          if pm2 show prismo-cloud | grep -q "online"; then
             echo "✅ Aplicação iniciada com sucesso!"
           else
             echo "⚠️ Verificar logs da aplicação para possíveis erros"
+            pm2 logs prismo-cloud --lines 20
+            exit 1
           fi
