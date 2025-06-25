@@ -8,7 +8,7 @@ on:
 
 jobs:
   update-and-start:
-    runs-on: ubuntu-latest
+    runs-on: docker-arch
 
     steps:
       - name: Checkout código
