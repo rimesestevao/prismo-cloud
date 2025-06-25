@@ -11,8 +11,47 @@ jobs:
     runs-on: docker-arch
     container:
       image: node:20
-    
     steps:
+      - name: Diagnóstico do ambiente
+        run: |
+          echo "=== Informações do Sistema ==="
+          uname -a
+          cat /etc/*release* 2>/dev/null || echo "Informações de release não disponíveis"
+          echo
+          
+          echo "=== Diretório de trabalho atual ==="
+          pwd
+          ls -la
+          echo
+          
+          echo "=== Ferramentas disponíveis ==="
+          echo "Node.js: $(command -v node || echo 'não instalado')"
+          [ -x "$(command -v node)" ] && node --version
+          
+          echo "NPM: $(command -v npm || echo 'não instalado')"
+          [ -x "$(command -v npm)" ] && npm --version
+          
+          echo "Git: $(command -v git || echo 'não instalado')"
+          [ -x "$(command -v git)" ] && git --version
+          
+          echo "Docker: $(command -v docker || echo 'não instalado')"
+          [ -x "$(command -v docker)" ] && docker --version
+          
+          echo "Docker Compose: $(command -v docker-compose || echo 'verifique docker compose')"
+          [ -x "$(command -v docker-compose)" ] && docker-compose --version
+          [ -x "$(command -v docker)" ] && docker compose version 2>/dev/null
+          
+          echo "PM2: $(command -v pm2 || echo 'não instalado')"
+          [ -x "$(command -v pm2)" ] && pm2 --version
+          
+          echo "Python: $(command -v python || echo 'não instalado') / $(command -v python3 || echo 'não instalado')"
+          [ -x "$(command -v python)" ] && python --version
+          [ -x "$(command -v python3)" ] && python3 --version
+          
+          echo
+          echo "=== Variáveis de ambiente ==="
+          env | grep -v -E 'PASSWORD|SECRET|TOKEN|KEY' || echo "Nenhuma variável de ambiente disponível"
+
       - name: Verificar instalação do Node.js
         run: |
           if ! command -v node &> /dev/null; then
