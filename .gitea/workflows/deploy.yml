@@ -9,6 +9,8 @@ on:
 jobs:
   update-and-start:
     runs-on: docker-arch
+    container:
+      image: node:20-slim  # Usando uma imagem oficial do Node.js
     
     steps:
       - name: Checkout código
