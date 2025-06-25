@@ -1,5 +1,5 @@
 # .gitea/workflows/deploy.yml
-name: Construir e Implantar a Aplicação em Produção
+name: Atualizar e Iniciar Aplicação
 
 on:
   push:
@@ -7,54 +7,50 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  update-and-start:
     runs-on: docker-arch
 
     steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      - name: Construir Imagem Docker
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: false # Não envia para um registro externo
-          load: true  # Carrega a imagem no Docker local do servidor
-          tags: prismo-cloud:latest # Nomeia a imagem
-          build-args: |
-            NODE_ENV=production
-
-      # Parar o container antigo e subir o novo com as configurações atualizadas
-      - name: Implantar Container
+      - name: Navegar para diretório do projeto
         run: |
-          echo "Parando e removendo container antigo, se existir..."
-          docker stop prismo-cloud || true
-          docker rm prismo-cloud || true
-          
-          echo "Iniciando novo container em ambiente de produção..."
-          docker run \
-            -d \
-            --restart always \
-            --name prismo-cloud \
-            -p 3080:3000 \
-            -e NODE_ENV=production \
-            -e DOMAIN=prismo.meesstudios.com.br \
-            -e CLOUDFLARE_TUNNEL=true \
-            --network cloudflare-network \
-            --label "traefik.enable=true" \
-            --label "traefik.http.routers.prismo.rule=Host(\`prismo.meesstudios.com.br\`)" \
-            --label "traefik.http.services.prismo.loadbalancer.server.port=3000" \
-            prismo-cloud:latest
-          
-          echo "✅ Implantação em produção concluída!"
+          cd /home/estevao/git/prismo-cloud
+          echo "Iniciando processo de atualização em $(pwd)..."
+
+      - name: Atualizar código (git pull)
+        run: |
+          cd /home/estevao/git/prismo-cloud
+          echo "Atualizando código do repositório..."
+          git pull origin main
+          echo "✅ Código atualizado com sucesso!"
+
+      - name: Instalar dependências
+        run: |
+          cd /home/estevao/git/prismo-cloud
+          echo "Instalando dependências do Node.js..."
+          npm install
+          echo "✅ Dependências instaladas com sucesso!"
+
+      - name: Iniciar containers com Docker Compose
+        run: |
+          cd /home/estevao/git/prismo-cloud
+          echo "Iniciando containers com Docker Compose..."
+          docker compose up -d
+          echo "✅ Containers iniciados em segundo plano!"
+
+      - name: Iniciar aplicação
+        run: |
+          cd /home/estevao/git/prismo-cloud
+          echo "Iniciando aplicação com npm..."
+          npm run start &
+          echo "✅ Aplicação iniciada em segundo plano!"
 
       - name: Verificar status da aplicação
         run: |
           echo "Aguardando inicialização da aplicação..."
           sleep 10
-          if docker logs prismo-cloud | grep -q "Server running"; then
+          ps aux | grep "npm run start" | grep -v grep
+          if [ $? -eq 0 ]; then
             echo "✅ Aplicação iniciada com sucesso!"
           else
             echo "⚠️ Verificar logs da aplicação para possíveis erros"
-            docker logs prismo-cloud --tail 50
           fi
