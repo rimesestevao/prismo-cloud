@@ -9,12 +9,23 @@ on:
 jobs:
   update-and-start:
     runs-on: docker-arch
-    container:
-      image: node:18-alpine
     
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
+      - name: Atualizar código
+        run: |
+          # Verificar se o diretório .git existe
+          if [ -d ".git" ]; then
+            echo "Repositório já existe, atualizando..."
+            git fetch origin
+            git reset --hard origin/main
+          else
+            echo "Diretório .git não encontrado, configurando repositório..."
+            git init
+            git remote add origin https://gitea.meesstudios.com.br/tevo/prismo-cloud.git
+            git fetch origin
+            git checkout -f main
+          fi
+          echo "✅ Código atualizado com sucesso!"
           
       - name: Instalar dependências
         run: |
