@@ -10,9 +10,21 @@ jobs:
   update-and-start:
     runs-on: docker-arch
     container:
-      image: node:20-slim  # Usando uma imagem oficial do Node.js
+      image: node:20  # Usando imagem completa do Node.js que inclui ferramentas comuns como git
     
     steps:
+      - name: Verificar ferramentas disponíveis
+        run: |
+          echo "Verificando ferramentas disponíveis..."
+          if ! command -v git &> /dev/null; then
+            echo "Git não encontrado, instalando..."
+            apt-get update -y && apt-get install -y git
+          else
+            echo "Git encontrado: $(git --version)"
+          fi
+          echo "Node.js version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          
       - name: Checkout código
         run: |
           echo "Fazendo checkout do código..."
@@ -20,18 +32,9 @@ jobs:
           pwd
           ls -la
           
-          # Tentar atualizar o código em vez de clonar novamente
-          if [ -d ".git" ]; then
-            echo "Repositório git encontrado, atualizando..."
-            git fetch origin
-            git reset --hard origin/main
-          else
-            echo "Repositório git não encontrado, inicializando..."
-            git init
-            git remote add origin https://gitea.meesstudios.com.br/tevo/prismo-cloud.git
-            git fetch origin
-            git checkout -f main
-          fi
+          # Faz checkout do código usando HTTPS (não requer autenticação)
+          git clone https://gitea.meesstudios.com.br/tevo/prismo-cloud.git .
+          git checkout main
           
           echo "✅ Checkout concluído com sucesso!"
           
@@ -75,8 +78,6 @@ jobs:
 
       - name: Iniciar aplicação com PM2
         run: |
-          echo "Instalando PM2 globalmente (caso ainda não esteja instalado)..."
-          npm install -g pm2 || true
           echo "Iniciando aplicação com PM2..."
           pm2 delete prismo-cloud || true
           pm2 start dist/app.js --name prismo-cloud
