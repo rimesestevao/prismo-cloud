@@ -9,13 +9,11 @@ on:
 jobs:
   update-and-start:
     runs-on: docker-arch
-    container:
-      image: node:18-alpine  # Usando uma imagem Docker oficial do Node.js
     
     steps:
       - name: Checkout código
-        uses: gitea://actions/checkout@main
-        # Usando o checkout específico do Gitea em vez do GitHub
+        run: |
+          git pull origin main
           
       - name: Instalar dependências
         run: |
