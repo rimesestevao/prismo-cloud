@@ -9,7 +9,8 @@ on:
 jobs:
   update-and-start:
     runs-on: docker-arch
-    # Removendo a definição de container, pois já temos o ambiente no runner
+    container:
+      image: node:18-alpine  # Usando uma imagem Docker oficial do Node.js
     
     steps:
       - name: Checkout código
