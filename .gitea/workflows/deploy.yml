@@ -16,11 +16,23 @@ jobs:
       - name: Checkout código
         run: |
           echo "Fazendo checkout do código..."
-          # Como o git está disponível, podemos usar git clone
-          cd /workspace/tevo
-          rm -rf prismo-cloud
-          git clone https://gitea.meesstudios.com.br/tevo/prismo-cloud.git
-          cd prismo-cloud
+          # Verificar se estamos no diretório correto
+          pwd
+          ls -la
+          
+          # Tentar atualizar o código em vez de clonar novamente
+          if [ -d ".git" ]; then
+            echo "Repositório git encontrado, atualizando..."
+            git fetch origin
+            git reset --hard origin/main
+          else
+            echo "Repositório git não encontrado, inicializando..."
+            git init
+            git remote add origin https://gitea.meesstudios.com.br/tevo/prismo-cloud.git
+            git fetch origin
+            git checkout -f main
+          fi
+          
           echo "✅ Checkout concluído com sucesso!"
           
       - name: Instalar dependências do projeto
@@ -63,6 +75,8 @@ jobs:
 
       - name: Iniciar aplicação com PM2
         run: |
+          echo "Instalando PM2 globalmente (caso ainda não esteja instalado)..."
+          npm install -g pm2 || true
           echo "Iniciando aplicação com PM2..."
           pm2 delete prismo-cloud || true
           pm2 start dist/app.js --name prismo-cloud
@@ -77,6 +91,6 @@ jobs:
             echo "✅ Aplicação iniciada com sucesso!"
           else
             echo "⚠️ Verificar logs da aplicação para possíveis erros"
-            pm2 logs prismo-cloud --lines 20
+            pm2 logs prismo-cloud --lines 20 || true
             exit 1
           fi
