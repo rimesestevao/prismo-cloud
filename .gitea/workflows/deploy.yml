@@ -9,25 +9,39 @@ on:
 jobs:
   update-and-start:
     runs-on: docker-arch
-    container:
-      image: node:18-alpine
     
     steps:
-      - name: Atualizar código
+      - name: Verificar instalação do Node.js
         run: |
-          # Verificar se o diretório .git existe
-          if [ -d ".git" ]; then
-            echo "Repositório já existe, atualizando..."
-            git fetch origin
-            git reset --hard origin/main
+          if ! command -v node &> /dev/null; then
+            echo "Node.js não encontrado, verifique se está instalado no runner"
+            exit 1
           else
-            echo "Diretório .git não encontrado, configurando repositório..."
-            git init
-            git remote add origin https://gitea.meesstudios.com.br/tevo/prismo-cloud.git
-            git fetch origin
-            git checkout -f main
+            echo "Node.js encontrado: $(node --version)"
           fi
-          echo "✅ Código atualizado com sucesso!"
+          
+          if ! command -v npm &> /dev/null; then
+            echo "NPM não encontrado, verifique se está instalado no runner"
+            exit 1
+          else
+            echo "NPM encontrado: $(npm --version)"
+          fi
+          
+      - name: Verificar instalação do Docker
+        run: |
+          if ! command -v docker &> /dev/null; then
+            echo "Docker não encontrado, verifique se está instalado no runner"
+            exit 1
+          else
+            echo "Docker encontrado: $(docker --version)"
+          fi
+          
+          if ! command -v docker-compose &> /dev/null && ! command -v docker &> /dev/null compose; then
+            echo "Docker Compose não encontrado, verifique se está instalado no runner"
+            exit 1
+          else
+            echo "Docker Compose encontrado"
+          fi
           
       - name: Instalar dependências
         run: |
@@ -44,7 +58,7 @@ jobs:
       - name: Iniciar containers com Docker Compose
         run: |
           echo "Iniciando containers com Docker Compose..."
-          docker compose down
+          docker compose down || true
           docker compose up -d
           echo "✅ Containers iniciados em segundo plano!"
           
