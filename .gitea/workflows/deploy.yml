@@ -4,7 +4,7 @@ name: Construir e Implantar a Aplicação em Produção
 on:
   push:
     branches:
-      - main # Roda apenas para pushes na branch 'main'
+      - main
 
 jobs:
   build-and-deploy:
