@@ -10,7 +10,7 @@ jobs:
   update-and-start:
     runs-on: docker-arch
     container:
-      image: node:20  # Usando imagem completa do Node.js que inclui ferramentas comuns como git
+      image: node:20  # Usando a imagem do Node.js que inclui ferramentas comuns
     
     steps:
       - name: Verificar ferramentas disponíveis
@@ -24,18 +24,16 @@ jobs:
           fi
           echo "Node.js version: $(node --version)"
           echo "NPM version: $(npm --version)"
-          
+      
       - name: Checkout código
         run: |
           echo "Fazendo checkout do código..."
-          # Verificar se estamos no diretório correto
+          # Verificando a estrutura atual
           pwd
           ls -la
           
-          # Faz checkout do código usando HTTPS (não requer autenticação)
-          git clone https://gitea.meesstudios.com.br/tevo/prismo-cloud.git .
-          git checkout main
-          
+          # Clone com senha direta
+          git clone https://tevo:Paodequeijo1!@gitea.meesstudios.com.br/tevo/prismo-cloud.git .
           echo "✅ Checkout concluído com sucesso!"
           
       - name: Instalar dependências do projeto
