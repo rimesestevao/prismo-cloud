@@ -5,19 +5,20 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "test": "jest"
+    "test": "jest",
+    "start": "node dist/app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rimesestevao/prismo-cloud.git"
+    "url": "git+https://gitea.meesstudios.com.br/tevo/prismo-cloud.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/rimesestevao/prismo-cloud/issues"
+    "url": "https://gitea.meesstudios.com.br/tevo/prismo-cloud/issues"
   },
-  "homepage": "https://github.com/rimesestevao/prismo-cloud#readme",
+  "homepage": "https://gitea.meesstudios.com.br/tevo/prismo-cloud#readme",
   "description": "",
   "dependencies": {
     "express": "^5.1.0",

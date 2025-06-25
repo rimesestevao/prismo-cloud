@@ -1,0 +1,60 @@
+# .gitea/workflows/deploy.yml
+name: Construir e Implantar a Aplicação em Produção
+
+on:
+  push:
+    branches:
+      - main # Roda apenas para pushes na branch 'main'
+
+jobs:
+  build-and-deploy:
+    runs-on: prismo_runner
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Construir Imagem Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false # Não envia para um registro externo
+          load: true  # Carrega a imagem no Docker local do servidor
+          tags: prismo-cloud:latest # Nomeia a imagem
+          build-args: |
+            NODE_ENV=production
+
+      # Parar o container antigo e subir o novo com as configurações atualizadas
+      - name: Implantar Container
+        run: |
+          echo "Parando e removendo container antigo, se existir..."
+          docker stop prismo-cloud || true
+          docker rm prismo-cloud || true
+          
+          echo "Iniciando novo container em ambiente de produção..."
+          docker run \
+            -d \
+            --restart always \
+            --name prismo-cloud \
+            -p 3080:3000 \
+            -e NODE_ENV=production \
+            -e DOMAIN=prismo.meesstudios.com.br \
+            -e CLOUDFLARE_TUNNEL=true \
+            --network cloudflare-network \
+            --label "traefik.enable=true" \
+            --label "traefik.http.routers.prismo.rule=Host(\`prismo.meesstudios.com.br\`)" \
+            --label "traefik.http.services.prismo.loadbalancer.server.port=3000" \
+            prismo-cloud:latest
+          
+          echo "✅ Implantação em produção concluída!"
+
+      - name: Verificar status da aplicação
+        run: |
+          echo "Aguardando inicialização da aplicação..."
+          sleep 10
+          if docker logs prismo-cloud | grep -q "Server running"; then
+            echo "✅ Aplicação iniciada com sucesso!"
+          else
+            echo "⚠️ Verificar logs da aplicação para possíveis erros"
+            docker logs prismo-cloud --tail 50
+          fi
