@@ -9,6 +9,8 @@ on:
 jobs:
   update-and-start:
     runs-on: docker-arch
+    container:
+      image: node:20
     
     steps:
       - name: Verificar instalação do Node.js
