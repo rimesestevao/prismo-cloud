@@ -13,9 +13,9 @@ jobs:
       image: node:18-alpine
     
     steps:
-      - name: Checkout código
-        run: |
-          git pull origin main
+      # - name: Checkout código
+      #   run: |
+      #     git pull origin main
           
       - name: Instalar dependências
         run: |
