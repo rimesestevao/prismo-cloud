@@ -4,23 +4,44 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "dev": "ts-node-dev --respawn --transpile-only --inspect=0.0.0.0:9229 src/app.ts",
+    "dev:debug": "ts-node-dev --respawn --transpile-only --inspect-brk=0.0.0.0:9229 src/app.ts",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "start": "node dist/app.js",
-    "deploy": "npx prisma migrate deploy && pm2 restart prismo-cloud || pm2 start dist/app.js --name prismo-cloud"
+    "start:prod": "NODE_ENV=production node dist/app.js",
+    "deploy": "npx prisma migrate deploy && pm2 restart prismo-cloud || pm2 start dist/app.js --name prismo-cloud",
+    "docker:build": "docker build -t prismo-cloud .",
+    "docker:run": "docker run -p 3000:3000 --env-file .env prismo-cloud",
+    "docker:dev": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:studio": "npx prisma studio",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "clean": "rm -rf dist"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitea.meesstudios.com.br/tevo/prismo-cloud.git"
+    "url": "git+https://github.com/rimesestevao/prismo-cloud.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "express",
+    "typescript",
+    "mongodb",
+    "postgresql",
+    "prisma",
+    "docker"
+  ],
+  "author": "Estevão Rimes",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitea.meesstudios.com.br/tevo/prismo-cloud/issues"
+    "url": "https://github.com/rimesestevao/prismo-cloud/issues"
   },
-  "homepage": "https://gitea.meesstudios.com.br/tevo/prismo-cloud#readme",
-  "description": "",
+  "homepage": "https://github.com/rimesestevao/prismo-cloud#readme",
+  "description": "Sistema de processamento de transações com Express, TypeScript e bancos MongoDB/PostgreSQL",
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^5.1.0",
@@ -35,6 +56,9 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.3",
     "@types/supertest": "^6.0.3",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
     "jest": "^30.0.2",
     "prisma": "^6.10.1",
     "supertest": "^7.1.1",

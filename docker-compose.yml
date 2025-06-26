@@ -1,4 +1,27 @@
+version: "3.8"
+
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prismo-app
+    ports:
+      - "3000:3000"
+      - "9229:9229" # Porta para debug
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://user:password@postgres:5432/prismo
+      - MONGO_URL=mongodb://mongo:27017/prismo
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - mongo
+    networks:
+      - prismo-network
+
   mongo:
     image: mongo:latest
     container_name: prismo-mongo
@@ -6,6 +29,8 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - prismo-network
 
   postgres:
     image: postgres:latest
@@ -18,7 +43,13 @@ services:
       POSTGRES_DB: prismo
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    networks:
+      - prismo-network
 
 volumes:
   mongo-data:
   postgres-data:
+
+networks:
+  prismo-network:
+    driver: bridge
