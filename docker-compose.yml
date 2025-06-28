@@ -13,6 +13,7 @@ services:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://user:password@postgres:5432/prismo
       - MONGODB_URI=mongodb://mongo:27017/prismo
+      - API_KEY=${API_KEY}
     volumes:
       - .:/app
       - /app/node_modules

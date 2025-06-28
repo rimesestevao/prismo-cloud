@@ -15,7 +15,6 @@ MongoDB is used as a staging area for raw, unstructured transaction data.
   - `processed` (Boolean, default: `false`): A flag to indicate whether the transaction has been processed.
   - `createdAt` (Date, default: `Date.now`): The timestamp when the document was created.
   - `processedAt` (Date): The timestamp when the transaction was processed.
-  - `apiToken` (String, required): The API token used to submit the transaction.
   - `processingErrors` (Array of Strings): A list of any errors that occurred during processing.
 
 ### `processing_logs`
@@ -36,7 +35,7 @@ PostgreSQL is used as the primary database for storing structured, processed, an
 (This is a textual representation of the ERD defined in `prisma/schema.prisma`)
 
 - **User:** Stores user information.
-  - `id`, `email`, `api_token`, `created_at`, `updated_at`
+  - `id`, `email`, `created_at`, `updated_at`
 - **Transaction:** The central table for storing transaction data.
   - `id`, `user_id`, `transaction_id_app`, `amount`, `transaction_type`, `description`, `transaction_timestamp`, `category`, `created_at`, `updated_at`
 - **Counterparty:** Stores information about the other party in the transaction.

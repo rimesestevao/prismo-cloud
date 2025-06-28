@@ -28,9 +28,8 @@ export const createStructuredTransaction = async (data: ITransaction) => {
       transaction_timestamp: transactionTimestamp,
       category,
       user: {
-        connectOrCreate: {
-          where: { email: user.email },
-          create: { email: user.email, api_token: user.api_token },
+        connect: {
+          email: user.email,
         },
       },
       counterparties: {
@@ -46,7 +45,11 @@ export const createStructuredTransaction = async (data: ITransaction) => {
         create: recurrence,
       },
       attachments: {
-        create: attachments,
+        create: attachments.map((attachment: any) => ({
+          type: attachment.type,
+          url: attachment.url,
+          description: attachment.description,
+        })),
       },
       locations: {
         create: location,

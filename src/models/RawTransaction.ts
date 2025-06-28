@@ -6,7 +6,6 @@ interface IRawTransaction extends Document {
   processed: boolean;
   createdAt: Date;
   processedAt?: Date;
-  apiToken: string;
   processingErrors?: string[];
 }
 
@@ -16,7 +15,6 @@ const RawTransactionSchema = new Schema<IRawTransaction>({
   processed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   processedAt: { type: Date },
-  apiToken: { type: String, required: true },
   processingErrors: { type: [String] },
 });
 

@@ -4,16 +4,10 @@ import logger from '../utils/logger';
 
 export const createTransaction = async (req: Request, res: Response) => {
   const { transactionIdApp } = req.body;
-  const apiToken = req.headers.authorization?.split(' ')[1];
-
-  if (!apiToken) {
-    return res.status(401).json({ success: false, message: 'Authorization token is required' });
-  }
 
   const rawTransaction = new RawTransaction({
     transactionIdApp,
     rawData: req.body,
-    apiToken,
   });
 
   await rawTransaction.save();
@@ -24,5 +18,48 @@ export const createTransaction = async (req: Request, res: Response) => {
     success: true,
     message: 'Transaction received and queued for processing',
     transactionId: transactionIdApp,
+  });
+};
+
+export const getTransactions = async (req: Request, res: Response) => {
+  const transactions = await RawTransaction.find({ processed: false });
+
+  res.status(200).json({
+    success: true,
+    transactions,
+  });
+};
+
+export const getTransaction = async (req: Request, res: Response) => {
+  const { transactionId } = req.params;
+
+  const transaction = await RawTransaction.findOne({ transactionIdApp: transactionId });
+
+  if (!transaction) {
+    return res.status(404).json({
+      success: false,
+      message: 'Transaction not found',
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    transaction,
+  });
+};
+
+export const getLastTransaction = async (req: Request, res: Response) => {
+  const transactions = await RawTransaction.find({ processed: false }).sort({ createdAt: -1 }).limit(1);
+
+  if (transactions.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: 'No transactions found',
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    transaction: transactions[0],
   });
 };

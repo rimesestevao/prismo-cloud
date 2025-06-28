@@ -2,7 +2,6 @@
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "email" TEXT NOT NULL,
-    "api_token" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -103,9 +102,6 @@ CREATE TABLE "TransactionMetadata" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_api_token_key" ON "User"("api_token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Transaction_transaction_id_app_key" ON "Transaction"("transaction_id_app");

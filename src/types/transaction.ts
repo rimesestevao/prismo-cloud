@@ -23,8 +23,8 @@ export interface ITransaction {
     end_date?: Date;
   };
   attachments: {
-    type: string;
-    url: string;
+    type?: string;
+    url?: string;
     description?: string;
   }[];
   location: {
@@ -34,11 +34,10 @@ export interface ITransaction {
     longitude?: number;
   };
   metadata: {
-    device_model?: string;
-    app_version?: string;
+    device_model: string;
+    app_version: string;
   };
   user: {
     email: string;
-    api_token: string;
   };
 }

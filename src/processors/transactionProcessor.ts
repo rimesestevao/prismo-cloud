@@ -30,11 +30,7 @@ export const processTransactions = async () => {
         attachments: rawData.attachments,
         location: rawData.location,
         metadata: rawData.metadata,
-        user: {
-          // In a real app, you'd get the user from the apiToken
-          email: `${tx.apiToken}@example.com`,
-          api_token: tx.apiToken,
-        },
+        user: rawData.user,
       };
 
       await createStructuredTransaction(structuredData);

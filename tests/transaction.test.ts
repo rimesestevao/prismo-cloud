@@ -63,10 +63,11 @@ describe('POST /api/v1/transactions', () => {
     await mongoose.connection.close();
   });
 
-  it('should create a new transaction and return 202', async () => {
+  it('should create a new transaction and return 202 with valid API key', async () => {
+    const apiKey = process.env.API_KEY || 'prismo-api-key-12345-abcdef-secret';
     const res = await request(app)
       .post('/api/v1/transactions')
-      .set('Authorization', 'Bearer test-token')
+      .set('Authorization', `Bearer ${apiKey}`)
       .send(transactionData);
 
     expect(res.status).toBe(202);
@@ -78,11 +79,23 @@ describe('POST /api/v1/transactions', () => {
     expect(rawTx?.processed).toBe(false);
   });
 
-  it('should return 401 if no token is provided', async () => {
+  it('should return 401 without Authorization header', async () => {
     const res = await request(app)
       .post('/api/v1/transactions')
       .send(transactionData);
 
     expect(res.status).toBe(401);
+    expect(res.body.error).toBe('Authorization header required');
   });
+
+  it('should return 401 with invalid API key', async () => {
+    const res = await request(app)
+      .post('/api/v1/transactions')
+      .set('Authorization', 'Bearer invalid-api-key')
+      .send(transactionData);
+
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBe('Invalid API key');
+  });
+
 });

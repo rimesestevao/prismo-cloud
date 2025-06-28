@@ -53,8 +53,7 @@ describe('Transaction Processor', () => {
   it('should process a transaction successfully', async () => {
     const rawTransaction = new RawTransaction({
       transactionIdApp: transactionData.transactionIdApp,
-      rawData: transactionData,
-      apiToken: 'test-token',
+      rawData: transactionData
     });
     await rawTransaction.save();
 
@@ -74,9 +73,9 @@ describe('Transaction Processor', () => {
   it('should handle processing failure', async () => {
     const rawTransaction = new RawTransaction({
       transactionIdApp: transactionData.transactionIdApp,
-      rawData: transactionData,
-      apiToken: 'test-token',
+      rawData: transactionData
     });
+    
     await rawTransaction.save();
 
     const errorMessage = 'Failed to insert into PostgreSQL';
